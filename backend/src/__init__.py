@@ -174,7 +174,7 @@ def create_app():
                 'success': True,
                 'msg': 'drink created',
                 'new_drink':{
-                    'title': new_title
+                    'title': new_drink.title
                 },
                 'drinks':[new_drink.long()]   
             }),201
@@ -232,6 +232,25 @@ def create_app():
         returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
             or appropriate status code indicating reason for failure
     '''
+    @app.delete('/drinks/<int:id>')
+    def delete_drinks(id):
+        drinks = Drink.query.filter(Drink.id==id).one_or_none()
+        
+        try:
+            if drinks is None:
+                return jsonify({
+                    "msg": "Drink not found"
+                }), 404
+            else:
+                drinks.delete()     
+            
+            return jsonify({
+                "success": True,
+                "delete": drinks.id
+            }),201
+        
+        except:
+            abort(404)
 
 
     # Error Handling
