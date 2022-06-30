@@ -4,7 +4,7 @@ from .models import setup_db, db_drop_and_create_all, Drink
 from sqlalchemy import exc
 import json
 import os
-from .auth import AuthError, requires_aut
+from .auth import AuthError,requires_auth
 
 
 def create_app():
@@ -41,7 +41,7 @@ def create_app():
     '''
 
     @app.route('/drinks')
-    @requires_aut('get:drinks')
+    @requires_auth('get:drinks')
     def get_drink(payload):
         page = request.args.get('page', 1,type=int)
         per_page = request.args.get('per_page', 1,type=int)
@@ -299,7 +299,7 @@ def create_app():
     @TODO implement error handler for AuthError
         error handler should conform to general task above
     '''
-    @APP.errorhandler(AuthError)
+    @app.errorhandler(AuthError)
     def handle_auth_error(ex):
         response = jsonify(ex.error)
         response.status_code = ex.status_code
