@@ -4,7 +4,7 @@ from .models import setup_db, db_drop_and_create_all, Drink
 from sqlalchemy import exc
 import json
 import os
-# from .auth import AuthError, requires_aut
+from .auth import AuthError, requires_aut
 
 
 def create_app():
@@ -41,7 +41,8 @@ def create_app():
     '''
 
     @app.route('/drinks')
-    def get_drink():
+    @requires_aut('get:drinks')
+    def get_drink(payload):
         page = request.args.get('page', 1,type=int)
         per_page = request.args.get('per_page', 1,type=int)
         
@@ -114,7 +115,8 @@ def create_app():
             or appropriate status code indicating reason for failure
     '''
     @app.get('/drink-detail')
-    def drinks_details():
+    @requires_auth('get:drinks-details')
+    def drinks_details(payload):
         page = request.args.get('page', 1,type=int)
         per_page = request.args.get('per_page', 1,type=int)
         
@@ -155,7 +157,8 @@ def create_app():
             or appropriate status code indicating reason for failure
     '''
     @app.post('/drinks')
-    def add_drinks():
+    @requires_auth('post:drinks')
+    def add_drinks(payload):
         
         new_title = request.json.get('title', None)
         new_recipe = request.json.get('recipe', None)
@@ -195,7 +198,8 @@ def create_app():
             or appropriate status code indicating reason for failure
     '''
     @app.patch('/drinks/<int:id>')
-    def update_drinks(id):
+    @requires_auth('patch:drinks')
+    def update_drinks(payload, id):
         drinks = Drink.query.filter(Drink.id==id).one_or_none()
         
         if not drink:
@@ -233,7 +237,8 @@ def create_app():
             or appropriate status code indicating reason for failure
     '''
     @app.delete('/drinks/<int:id>')
-    def delete_drinks(id):
+    @requires_auth('delete:drinks')
+    def delete_drinks(payload, id):
         drinks = Drink.query.filter(Drink.id==id).one_or_none()
         
         try:
@@ -294,6 +299,12 @@ def create_app():
     @TODO implement error handler for AuthError
         error handler should conform to general task above
     '''
+    @APP.errorhandler(AuthError)
+    def handle_auth_error(ex):
+        response = jsonify(ex.error)
+        response.status_code = ex.status_code
+        return response
+
     
     return app
     
